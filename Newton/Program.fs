@@ -38,22 +38,20 @@ module NewtonMonad =
     then Solved newGuess
     else NM { param with guess=newGuess }
 
-  let row param =
+  let method param =
     let source, diff = param.funcs.source, param.funcs.diff
     let guess = param.guess
     let newGuess = guess - (source guess) / (diff guess)
     param |> limited newGuess
 
-  let calc funcs limit initPoint =
+  let calc param =
     let loop f (n: NewtonMonad) =
       let rec iter f step (n: NewtonMonad) =
         if n.IsFinished || step > 10
         then n
         else iter f (step+1) (n >>= f)
       iter f 0 n
-
-    NewtonMonad.Return (funcs, limit, initPoint)
-    |> loop row
+    loop method param
 
   let inline result (x:^X) =
     (^X: (member Get: Complex32) x)
@@ -74,8 +72,10 @@ let main argv =
       Complex32(-1.f, 0.f)
       Complex32(0.f, -1.f) ]
 
-  let result = List.map ( NewtonMonad.calc funcs limit
-                          >> NewtonMonad.result )
+  let result = List.map (fun x ->
+                          NewtonMonad.Return (funcs, limit, x)
+                          |> NewtonMonad.calc
+                          |> NewtonMonad.result )
                         initialPoints
   let result = List.map2 (fun init result -> init, result) 
                          initialPoints 
