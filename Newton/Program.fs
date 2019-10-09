@@ -33,7 +33,6 @@ type NewtonMonad =
     | Solved s -> Solved s
 
 module NewtonMonad =
-
   let limited newGuess param =
     if param.limit > abs ( Complex32.magnitude (newGuess - param.guess) )
     then Solved newGuess
@@ -44,6 +43,17 @@ module NewtonMonad =
     let guess = param.guess
     let newGuess = guess - (source guess) / (diff guess)
     param |> limited newGuess
+
+  let calc funcs limit initPoint =
+    let loop f (n: NewtonMonad) =
+      let rec iter f step (n: NewtonMonad) =
+        if n.IsFinished || step > 10
+        then n
+        else iter f (step+1) (n >>= f)
+      iter f 0 n
+
+    NewtonMonad.Return (funcs, limit, initPoint)
+    |> loop row
 
   let inline result (x:^X) =
     (^X: (member Get: Complex32) x)
@@ -64,19 +74,12 @@ let main argv =
       Complex32(-1.f, 0.f)
       Complex32(0.f, -1.f) ]
 
-  let calc initPoint =
-    let loop f (n: NewtonMonad) =
-      let rec iter f step (n: NewtonMonad) =
-        if n.IsFinished || step > 10
-        then n
-        else iter f (step+1) (n >>= f)
-      iter f 0 n
-
-    NewtonMonad.Return (funcs, limit, initPoint)
-    |> loop NewtonMonad.row
-    
-  let result = List.map (fun x -> x, x |> calc |> NewtonMonad.result) 
+  let result = List.map ( NewtonMonad.calc funcs limit
+                          >> NewtonMonad.result )
+                        initialPoints
+  let result = List.map2 (fun init result -> init, result) 
                          initialPoints 
+                         result
 
   List.iter (fun (init: Complex32, result: Complex32) ->
               printfn "init: %.3f+%.3fi => result: %f+%fi."
