@@ -1,0 +1,163 @@
+@require: stdjareport
+@require: itemize
+@require: matrix
+
+let-block +do-proof bt =
+  '<
+    +p{Proof：}
+    #bt;
+    +p{QED．}
+  >
+in
+
+document (|
+  title = {Chandrupatla法};
+  author = {\@shinkwhek};
+|) '<
+  +chapter{概要}<
+    +p{
+      Newton法の問題として，
+      \listing{
+        * 導関数が複雑な場合，準備に手間が掛かる
+        * 初期値の選択に注意しなければならない
+        * 場合によって遅くなる（${\app{f'}{x_\infty} = 0}のとき）
+      }%
+      などがある．
+      これに対し，\dfn{Chandrupatla法}は導関数を求める必要がなく，
+      誤差収束が常に${\epsilon^{1.84}}で，
+      初期値の選択がNewton法のそれより機械的に行えるといった利点がある．
+    }
+    +p{
+     第\ref(`deriv`);章ではChandrupatla法の導出を，
+     第\ref(`algorism`);章ではアルゴリズムについて記述する．
+    }
+    +p{
+      以下の議論において，特に断りが無ければ任意の値が取る空間は${\mathbb{R}}とする．
+    }
+  >
+  +chapter?:(`deriv`){導出}<
+    +p{
+      方程式${\app{f}{x} = 0}が与えられたとする．
+      x軸を跨ぐような3点${\paren{x_1,y_1},\paren{x_2,y_2},\paren{x_3,y_3}}を用意する．
+    }
+    +lemma?*?:(`3fit`){異なる3点を通る2次関数は一意}
+    +do-proof<
+      +p{
+        ${\paren{x_1,y_1},\paren{x_2,y_2},\paren{x_3,y_3} \in\mathbb{R}\times\mathbb{R}}に対し，
+        2次方程式${y_i = a_1x_i^2 + a_2x_i + a_3, i=1,2,3}とおく．
+        これを1つにまとめ，
+        \align[
+          ${| y |= \matrix![
+                     [${x_1^2}; ${x_1}; ${1}];
+                     [${x_2^2}; ${x_2}; ${1}];
+                     [${x_3^2}; ${x_3}; ${1}];
+                    ] a |};
+          ${|   |= V a |};
+        ];%
+        とおく．
+        ${det V \neq 0}ならば${V}の逆行列が存在して${a}は一意．
+        ここで${V}は\dfn{Vandermonde's determinant}なので，
+        \align[
+          ${| det V |= \paren{x_3-x_2}\paren{x_3-x_2}\paren{x_2-x_1} |};
+          ${|       |\neq 0 |};
+        ];%
+      }
+    >
+    +p{
+      ここで\dfn{ラグランジュの補間公式}の逆関数を以下のように与える．
+    }
+    +definition{
+      \eqn(${
+        \app{x}{y} \coloneq x_3\frac{\paren{y-y_1}\paren{y-y_2}}{\paren{y_3-y_2}\paren{y_3-y_2}}
+                    + x_2\frac{\paren{y-y_1}\paren{y-y_3}}{\paren{y_2-y_1}\paren{y_2-y_3}}
+                    + x_1\frac{\paren{y-y_2}\paren{y-y_3}}{\paren{y_1-y_2}\paren{y_1-y_3}}
+      });%
+      また，ラグランジュの補間公式は以下の性質を満たす．
+      ${\paren{i = 1,2,3}}
+      \eqn(${
+        \app{x}{y_i} = y_i
+      });%
+    }
+    +p{
+      これを用いて新たな点のx座標を得る．
+      \align[
+        ${| x_4 |= \app{x}{y=0} |};
+        ${|     |= \frac{x_3}{\paren{\frac{y_3}{y_1}-1}\paren{\frac{y_3}{y_2}-1}}
+                   + \frac{x_2}{\paren{\frac{y_2}{y_1}-1}\paren{\frac{y_2}{y_3}-1}}
+                   + \frac{x_1}{\paren{\frac{y_1}{y_2}-1}\paren{\frac{y_1}{y_3}-1}} |};
+      ];
+    }
+  >
+  +chapter?:(`algorism`){アルゴリズム}<
+    +p{
+      ${y_i \coloneq \app{f}{x_i}}，${\paren{i \in \mathbb{N}}}とおく．
+    }
+    +enumerate{
+      * 方程式${\app{f}{x} = 0}に対し，${y_1 < 0 \land y_2 > 0}であるような点
+        ${\paren{x_1, y_1}, \paren{x_2, y_2}} を得る．
+      * ${x_3 \coloneq \frac{x_1 + x_2}{2}}とし，点${\paren{x_3,y_3}}を得る．
+      * 点${\paren{x_1,y_1},\paren{x_2,y_2},\paren{x_3,y_3}}を初期値とする．
+      * 与えられた3点${\paren{x_n,y_n},\paren{x_{n+1},y_{n+1}},\paren{x_{n+2},y_{n+2}}}に対し，
+        \eqn(${
+          x_{n+3} =   \frac{x_{n+2}}{\paren{\frac{y_{n+2}}{y_n}-1}\paren{\frac{y_{n+2}}{y_{n+1}}-1}}
+                    + \frac{x_{n+1}}{\paren{\frac{y_{n+1}}{y_n}-1}\paren{\frac{y_{n+1}}{y_{n+2}}-1}}
+                    + \frac{x_n}{\paren{\frac{y_n}{y_{n+1}}-1}\paren{\frac{y_n}{y_{n+2}}-1}}
+        });%
+        を用いて${x_{n+3}}を得る．
+      * 3点${\paren{x_{n+1},y_{n+1}},\paren{x_{n+2},y_{n+2}},\paren{x_{n+3},y_{n+3}}}に対し
+        ${\paren{4}}を再帰的に行う．（つまり${n}を1つずつズラし3点を更新してゆく）
+    }
+  >
+  +chapter?:(`ex`){例}<
+    +section{${x-e^{-x} = 0}}<
+      +p{
+        \align[
+          ${| \paren{x_1,y_1} |= \paren{1, 1-e^{-1}} |};
+          ${| \paren{x_2,y_2} |= \paren{-1, -1-e} |};
+          ${| \paren{x_3,y_3} |= \paren{0,-1} |};
+        ];%
+        とおくと，
+        \align[
+          ${| x_4 |= 0.5771270342 |};
+          ${| x_5 |= 0.5674140938 |};
+          ${| x_6 |= 0.5671432725 |};
+        ];%
+      }
+    >
+    +section{${x-\cos x = 0}}<
+      +p{
+        \align[
+          ${| \paren{x_1,y_1} |= \paren{2,2-\cos 2} |};
+          ${| \paren{x_2,y_2} |= \paren{1,1-\cos 1} |};
+          ${| \paren{x_3,y_3} |= \paren{1.25, 1.25-\cos 1.25} |};
+        ];%
+        とおくと，
+        \align[
+          ${| x_4 |= 0.7240472384 |};
+          ${| x_5 |= 0.7393581343 |};
+          ${| x_6 |= 0.7390848511 |};
+          ${| x_7 |= 0.7390851332 |};
+        ];%
+      }
+    >
+    +section{${x^6-x-1 = 0}}<
+      +p{
+        \align[
+          ${| \paren{x_1,y_1} |= \paren{2, 61} |};
+          ${| \paren{x_2,y_2} |= \paren{1, -1} |};
+          ${| \paren{x_3,y_3} |= \paren{1.5, 8.890625} |};
+        ];%
+        とおくと，
+        \align[
+          ${| x_4 |= 1.056426144 |};
+          ${| x_5 |= 1.160856479 |};
+          ${| x_6 |= 1.130869905 |};
+          ${| x_7 |= 1.134801751 |};
+          ${| x_8 |= 1.134724072 |};
+          ${| x_9 |= 1.134724138 |};
+        ];%
+      }
+    >
+  >
+>
+

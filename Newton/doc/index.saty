@@ -1,0 +1,103 @@
+@require: stdjareport
+
+document (|
+  title = {Newton法};
+  author = {\@shinkwhek};
+|) '<
+  +chapter?:(`chap:introduction`){概要}<
+    +p{
+      本稿では\dfn{Newton法}のアルゴリズムの解説と評価を行う．
+      第\ref(`chap:idea`);章ではNewton法の導出を，
+      第\ref(`chap:algorism`);章ではNewton法のアルゴリズムを，
+      第\ref(`chap:eval`);章ではNewton法の性能について考察を与える．
+    }
+  >
+  +chapter?:(`chap:idea`){導出}<
+    +p{
+      方程式が関数fによって${\app{f}{x} = 0}と与えられているとする．
+      これに対し，${\epsilon\ll 1}を用いて方程式の解を${x = x_0 + \epsilon}とおき，
+      ${x_0}周りでテイラー展開する．
+      \align[
+        ${| \app{f}{x_0 + \epsilon}
+              |= 0 |};
+        ${|   |= \app{f}{x_0} + \epsilon \app{f'}{x_0} + \frac{\epsilon^2}{2}\app{f''}{x_0}
+                 + \frac{\epsilon^3}{6}\app{f'''}{x_0} ...  |}
+      ];%
+      ${\epsilon}が十分に小さいことから以下のように近似する．
+      \align[
+        ${| |\app{f}{x_0} + \epsilon\app{f'}{x_0} \simeq 0 |};
+        ${| \Rightarrow |\epsilon \simeq - \frac{\app{f}{x_0}}{\app{f'}{x_0}} |};
+      ];
+      このように得られた${\epsilon}を${x_0 + \epsilon}に代入することで，
+      真の解により近い値${x_1}を得る．
+    }
+  >
+  +chapter?:(`chap:algorism`){アルゴリズム}<
+    +p {
+     方程式${\app{f}{x} = 0}に対し，以下のような漸化式を得る．
+     \eqn(${
+      x_{n+1} = x_n - \frac{\app{f}{x_n}}{\app{f'}{x_n}}
+     });%
+     初期値${x_0}を適切に与え，
+     \eqn(${
+      x_{\infty} = \lim_{n\to\infty} x_n
+     });%
+     を得る．
+    }
+  >
+  +chapter?:(`chap:eval`){評価}<
+    +p{
+      方程式${\app{f}{x} = 0}の真の解を${x_\infty}とする．
+      ${x_n = x_\infty + \epsilon_n}とおくと，
+      \align[
+        ${| x_\infty + \epsilon_{n+1}
+            |= x_\infty + \epsilon_n - \frac{\app{f}{x_\infty + \epsilon_n}}{\app{f'}{x_\infty + \epsilon_n}} |};
+        ${| \epsilon_{n+1} |= \epsilon_n - \frac{\app{f}{x_\infty + \epsilon_n}}{\app{f'}{x_\infty + \epsilon_n}} |}
+      ];%
+      このように誤差${\epsilon}に関する漸化式を得ることができる．
+      次にこの${\epsilon}の収束の仕方を調べるために式を簡単にする．
+      右辺2項目を分母と分子それぞれで${x_\infty}周りでテイラー展開する．
+      \align[
+        ${| \epsilon_{n+1}
+              |= \epsilon_n
+                  - \frac{\app{f}{x_\infty} + \epsilon_n\app{f'}{x_\infty} + \frac{\epsilon_n^2}{2}\app{f''}{x_\infty}}
+                         {\app{f'}{x_\infty} + \epsilon_n\app{f''}{x_\infty} + \frac{\epsilon_n^2}{2}\app{f'''}{x_\infty} } |};
+        ${| |= \frac{ \frac{1}{2} \epsilon_n^2\app{f''}{x_\infty}}
+                    { \app{f'}{x_\infty} + \epsilon_n\app{f''}{x_\infty} + \frac{\epsilon_n^2}{2}\app{f'''}{x_\infty} } |};
+      ];%
+      ${ \app{f'}{x_\infty} \neq 0 }ならば，
+      \eqn(${
+        \epsilon_{n+1} \simeq \sqbracket{ \frac{\app{f''}{x_\infty}}{2\app{f'}{x_\infty}} } \epsilon_n^2
+      });%
+      このように，${\epsilon_{n+1}}は${\epsilon_n^2}に依存して決まる．
+    }
+    +p{
+      また，${\app{f'}{x_\infty} = 0}ならば
+      \eqn(${
+        \epsilon_{n+1} = \frac{\epsilon_n}{2}
+      });%
+      となり，
+      ${\epsilon_{n+1}}は${\epsilon_n}の${\frac{1}{2}}倍で決まることとなり，
+      これは${\app{f'}{x_\infty} \neq 0}の場合に比べて収束が遅い．
+    }
+    +p{
+      次に，
+      \eqn(${
+        x_{n+1} = x_n - 2\frac{\app{f}{x_n}}{\app{f'}{x_n}}
+      });%
+      を考える．
+      上と同様に${x_n = x_\infty + \epsilon_n}とおき，${\epsilon_{n+1}}を計算する．
+      このとき${\app{f'}{x} = 0}であることに注意する．
+      \align[
+        ${| \epsilon_{n+1}
+            |\simeq \epsilon_n
+                    - 2 \sqbracket{ \frac{\frac{\epsilon_n^2}{2}\app{f''}{x_\infty} + \frac{\epsilon_n^3}{6}\app{f'''}{x_\infty}}
+                                         {\epsilon_n\app{f''}{x_\infty}}} |};
+        ${| |\simeq \frac{1}{\epsilon_n\app{f''}{x_\infty}}
+                    \sqbracket{ \epsilon_n^2\app{f''}{x_\infty}-\epsilon_n^2\app{f''}{x_\infty}-\frac{\epsilon_n^3}{3}\app{f'''}{x_\infty} } |};
+        ${| |\simeq \sqbracket{ -\frac{\app{f'''}{x_\infty}}{3\app{f''}{x_\infty}} }\epsilon_n^2 |};
+      ];%
+      このように，${\app{f'}{x} = 0}の場合でも同等の収束速度が得られる．
+    }
+  >
+>
